@@ -8,21 +8,9 @@ I got tired of manually searching for 1KB Missing cooked files after cooking and
 
 I added 4. Find patch modified files |  for anyone that overwrites vanilla assets | just point to your Mods\Content | point or drop asset_changes.txt and it will do its magic
 
-Core Functionalities
+Key Features:
 
-1. **Missing Cooked Files Detection**
-   - Parses log files for "Missing cooked file" entries
-   - Focuses on paths starting with 'Content/Mods/'
-   - Case-insensitive file matching
-
-2. **File Search System**
-   - Recursive directory scanning
-   - Smart path matching considering mod structure
-   - Size calculation and formatting
-   - Path relativity handling
-
-3. **File Management**
-   - Individual and batch file deletion
-   - Confirmation prompts for safety
-   - Error handling and reporting
-   - Success/failure tracking
+1. Search for missing cooked files
+2. Configuration management
+3. Patch modification detection
+4. File deletion management
