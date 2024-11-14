@@ -1,4 +1,4 @@
-Executable can be found in [Releases](https://github.com/sibercat/SibercatsLauncher/releases) If your going to use .exe the executable was created by PyInstaller so you could get a false positive, you know the deal.
+Executable can be found in [Releases](https://github.com/sibercat/ConanExiles_ModFileManagement/releases) If your going to use .exe the executable was created by PyInstaller so you could get a false positive, you know the deal.
 
 ===========================================================================
 
