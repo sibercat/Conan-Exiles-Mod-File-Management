@@ -1,6 +1,6 @@
 I got tired of manually searching for 1KB Missing cooked files after cooking and made this little script.
 
-I added 4. Files matching for anyone that overwrites vanilla assets 
+I added 4. Find patch modified files |  for anyone that overwrites vanilla assets | just point to your Mods\Content | point or drop asset_changes.txt and it will do its magic
 
 Core Functionalities
 
