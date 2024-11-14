@@ -1,4 +1,4 @@
-I got tired of manually searching for 1KB Missing cooked files after cooking and maked this little script.
+I got tired of manually searching for 1KB Missing cooked files after cooking and made this little script.
 
 I added 4. Files matching for anyone that overwrites vanilla assets 
 
