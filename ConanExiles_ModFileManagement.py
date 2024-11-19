@@ -1,3 +1,4 @@
+#V0.0.10
 import os
 import json
 import shutil
@@ -16,7 +17,7 @@ class ConfigManager:
             'last_modified': '',
             'backup_directory': '',
             'file_extensions_filter': [],
-            'max_file_size': 0
+            'orphaned_file_threshold': 1024  # Default to 1KB
         }
         self.config = self.load_config()
 
@@ -156,44 +157,72 @@ def extract_filenames(log_file: str) -> List[str]:
         return []
     return file_paths
 
-def search_files(search_path: str, file_paths: List[str]) -> List[Tuple[str, int]]:
-    """Search for files using Content/Mods/... paths with case-insensitive matching."""
+def search_files(search_path: str, file_paths: List[str], config: Dict[str, Any]) -> List[Tuple[str, int]]:
+    """Search for files using Content/Mods/... paths with strict path matching and size warning."""
     found_files = []
     abs_path = os.path.abspath(search_path)
     print(f"\nSearching in: {abs_path}")
     
+    # Define size threshold for potential orphaned files (1KB = 1024 bytes)
+    ORPHANED_FILE_THRESHOLD = config.get('orphaned_file_threshold', 1024)  # Default to 1KB if not in config
+    
     for content_path in file_paths:
         try:
-            # Get just the filename
-            filename = os.path.basename(content_path)
+            # Normalize the target path
+            normalized_target = content_path.split('Content/Mods/')[-1].replace('/', os.sep)
+            filename = os.path.basename(normalized_target)
+            print(f"\nSearching for: {filename}")
+            print(f"Expected path: {normalized_target}")
             
-            # Split the path into parts for more flexible matching
-            path_parts = content_path.replace('Content/Mods/', '').split('/')
-            if len(path_parts) >= 4:  # Mods/ExilesExtreme/armor/...
-                # Get the important parts we want to match (mod name and last two directories)
-                mod_name = path_parts[1]  # ExilesExtreme
-                last_dirs = path_parts[-2:]  # ['TurtleShell', filename]
-                
-            print(f"Searching for: {filename}")
-            print(f"In mod: {mod_name}")
-            print(f"Expected end path: {'/'.join(last_dirs)}")
-            
-            # Walk through the directory structure
             for root, _, files in os.walk(abs_path):
                 for file in files:
-                    if file.lower() == filename.lower():  # Case-insensitive filename comparison
+                    if file.lower() == filename.lower():
                         full_path = os.path.join(root, file)
                         rel_path = os.path.relpath(full_path, abs_path).replace('\\', '/')
                         
-                        # Check if path contains mod name and the last two directory names
-                        if (mod_name.lower() in rel_path.lower() and 
-                            all(part.lower() in rel_path.lower() for part in last_dirs)):
+                        # Extract the part after Content/Mods/ or Local/ for comparison
+                        if '/Local/' in rel_path:
+                            compare_path = rel_path.split('/Local/')[-1]
+                        else:
+                            compare_path = rel_path.split('/Content/Mods/')[-1]
+                            
+                        # Split paths into components for comparison
+                        target_components = normalized_target.replace('\\', '/').split('/')
+                        found_components = compare_path.split('/')
+                        
+                        if 'Local' in found_components:
+                            found_components.remove('Local')
+                            
+                        # Compare the directory structure
+                        if target_components[-3:] == found_components[-3:]:
                             size = os.path.getsize(full_path)
                             found_files.append((full_path, size))
-                            print(f"Found match: {full_path}")
+                            
+                            # Add clear indication if file is likely an orphaned file
+                            if size < ORPHANED_FILE_THRESHOLD:
+                                print(f"Found match (LIKELY ORPHANED FILE): {full_path}")
+                                print(f"Size: {size} bytes - This appears to be a leftover file from UE4 deletion")
+                            else:
+                                print(f"Found match: {full_path}")
+                                print(f"Size: {size} bytes")
+                            
+                            print(f"Path components matched: {' -> '.join(target_components[-3:])}")
+                        else:
+                            print(f"Skipping potential false positive: {full_path}")
+                            print(f"Expected path components: {' -> '.join(target_components[-3:])}")
+                            print(f"Found path components: {' -> '.join(found_components[-3:])}")
                         
         except OSError as e:
             print(f"Error accessing path: {e}")
+    
+    # Sort files with orphaned files first
+    found_files.sort(key=lambda x: (x[1] >= ORPHANED_FILE_THRESHOLD, x[1]))
+    
+    # Add summary of orphaned files
+    orphaned_count = sum(1 for _, size in found_files if size < ORPHANED_FILE_THRESHOLD)
+    if orphaned_count > 0:
+        print(f"\nFound {orphaned_count} potential orphaned files (size < 1KB)")
+        print("These are likely leftover files from UE4 asset deletion and can be safely removed")
     
     return found_files
 
@@ -261,7 +290,7 @@ def main():
     config = config_manager.config
 
     while True:
-        print("Conan Exiles Mod File Manager By Sibercat V0.0.8")
+        print("Conan Exiles Mod File Manager By Sibercat V0.0.10")
         print("\nMenu Options:")
         print("1. Search for missing cooked files and delete")
         print("2. View current configuration")
@@ -306,7 +335,7 @@ def main():
                 config_manager.save_config(config)
 
             # Search for files
-            found_files = search_files(search_dir, file_paths)
+            found_files = search_files(search_dir, file_paths, config)
             if not found_files:
                 print("\nNo matching files were found.")
                 continue
