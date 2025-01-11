@@ -2,7 +2,7 @@ Executable can be found in [Releases](https://github.com/sibercat/ConanExiles_Mo
 
 ===========================================================================
 
-![alt text](https://cdn.discordapp.com/attachments/517436895387451399/1306518180918984704/image.png?ex=6736f560&is=6735a3e0&hm=fda4938e204350e8462fe804999a61c96977031cbe7e6d89d4261e582eb93743&)
+![alt text](https://github.com/sibercat/Conan-Exiles-Mod-File-Management/blob/main/preview_Image.png)
 
 Note: The script looks inside **ConanSandbox\Content\Mods** directory  - Be careful before you delete anything make a backup of your mod directory
 
